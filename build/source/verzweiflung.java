@@ -24,6 +24,7 @@ public class verzweiflung extends PApplet {
 
 float factor;
 
+int pixellationFactor = 2;
 Capture video;
 OpenCV opencv;
 
@@ -34,32 +35,38 @@ public void setup() {
   opencv.loadCascade(OpenCV.CASCADE_FRONTALFACE);
 
   video.start();
+
+  rectMode(CENTER);
 }
 
 public void draw() {
-
   background(255);
   scale(2);
   opencv.loadImage(video);
 
-  //image(video, 0, 0 );
+  image(video, 0, 0);
+  loadPixels();
+  background(255);
 
   noFill();
-  stroke(255);
-  strokeWeight(3);
+  noStroke();
   Rectangle[] faces = opencv.detect();
-  println(faces.length);
 
-  for (int i = 0; i < faces.length; i++) {
-    //println(faces[i].x + "," + faces[i].y);
-    factor = map(faces[i].width, 60, 140, 0, 1);
-    rect(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
+  if (faces.length > 0){
+    pixellationFactor = faces[0].width/5;
+    if(pixellationFactor % 2 > 0){
+      pixellationFactor += 1;
+    }
+    println("Face detected, setting pixellationFactor to: " + pixellationFactor);
   }
 
-  float size = map(factor, 0, 1, 60, 300);
-  fill(0);
-  println(size);
-  rect(0, 0, size, size);
+  for (int i = 0; i < (width/pixellationFactor); i++){
+    for(int j = 0; j < (height/pixellationFactor); j++){
+      fill(pixels[j*video.width*pixellationFactor + i*pixellationFactor]);
+      rect(i*pixellationFactor, j*pixellationFactor, pixellationFactor, pixellationFactor);
+    }
+
+  }
 }
 
 public void captureEvent(Capture c) {
